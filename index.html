@@ -1,0 +1,451 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- Use with reveal.js 3.6.0 -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>CRDs, Operators and you</title>
+
+    <link rel="stylesheet" href="reveal.js-3.6.0/css/reveal.css">
+    <link rel="stylesheet" href="reveal.js-3.6.0/css/theme/black.css">
+    <link rel="stylesheet" href="css/custom.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="reveal.js-3.6.0/lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js-3.6.0/css/print/pdf.css' : 'reveal.js-3.6.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides" >
+        <section>
+          <section>
+            <h1>CRDs, Operators and you</h1>
+            <p/>
+            <img src="img/k8s.png" style="border:none; background:none;width:25%;"/><br/>
+          </section>
+          <section>
+            <h3>whoami</h3>
+            <div id="left">
+              <ul>
+                <li>Pieter Lange</li>
+                <li>IT infrastructure technician</li>
+                <li>pieter@ptlc.nl</li>
+                <li><a href="https://github.com/pieterlange/">github.com/pieterlange</a></li>
+                <li class="fragment" style="font-family: 'Lucida Console', Monaco, monospace;">eat, sleep, <img src="img/k8sparty.gif" style="border:none; background:none;width:10%;"/>, repeat</li>
+              </ul>
+            </div>
+            <div id="right">
+              <img src="img/profile.jpg" style="border:none; background:none;width:60%;"/><br/>
+            </div>
+          </section>
+          <section>
+            <a href="https://www.meetup.com/Kubernetes-Addicts-Support-Group/">kubernetes addicts support group</a><br/>
+            <img src="img/k8saddicts.jpg" style="border:none; background:none;width:65%;"/><br/>
+            
+          </section>
+          <section>
+            <h1>Quick poll</h1>
+              <ul>
+                <li class="fragment">Who is NOT using docker?</li>
+                <li class="fragment">Who is using kubernetes?</li>
+                <li class="fragment">Who is using kubernetes in production? :-D</li>
+                <li class="fragment">Who's been to kubecon?!</li>
+              <ul>
+          </section>
+          <section>
+            <h3>Agenda</h3>
+            <small class="fragment"><em>"Robots will be able to do everything better than us" - Elon Musk</em></small><br/>
+            <ol>
+              <li>API's and CRD's</li>
+              <li>Some operator examples</li>
+              <li>Demo</li>
+              <li>Some observations</li>
+              <li>You</li>
+            </ol>
+          </section>
+        </section>
+        <section>
+          <section>
+          <h1>The kubernetes API</h1>
+          </section>
+          <section tagcloud data-transition="fade-in">
+            Cloud portability
+            Declarative configuration
+            Strong primitives
+            Versioned
+            Extensible
+            Vendor neutral
+          </section>
+          <section>
+            <h1>Kubernetes objects</h3>
+            <ul>
+              <li><a href="https://github.com/pieterlange/secretlifeofpods">Pods</a></li>
+              <li>Services</li>
+              <li>Volumes</li>
+              <li>Namespaces</li>
+            </ul>
+          </section>
+          <section>
+            <h1>Higher level Kubernetes objects</h3>
+            <ul>
+              <li>Deployments</li>
+              <li>Jobs</li>
+              <li>StatefulSets</li>
+              <li>DaemonSets</li>
+              <li class="fragment">Ingresses</li>
+            </ul>
+          </section>
+          <section>
+            <img src="img/depreppodnode.png" style="border:none; background:none;width:40%;margin: auto;display: block;"/><br/>
+          </section>
+          <section>
+              <h2>Pods</h2>
+              <pre>
+                <code data-trim>
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: ptlcdebug
+                    namespace: default
+                    labels:
+                      app: k8sday
+                  spec:
+                    containers:
+                    - command:
+                      - sleep
+                      - "86400"
+                      image: alpine:3.7
+                      name: alpine
+              </code>
+            </pre>
+          </section>
+          <section data-transition="fade-out">
+              <h2>Services</h2>
+              <pre>
+                <code data-trim>
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    name: ptlc
+                    namespace: default
+                  spec:
+                    ports:
+                    - port: 80
+                      targetPort: 3000
+                    selector:
+                      app: k8sday
+                  status:
+                    loadBalancer: {}
+              </code>
+            </pre>
+          </section>
+          <section data-transition="fade-in">
+              <h2>Services</h2>
+              <pre>
+                <code data-trim data-noescape>
+                  <mark>apiVersion:</mark> v1
+                  <mark>kind:</mark> Service
+                  <mark>metadata:</mark>
+                    <mark>name:</mark> ptlc
+                    namespace: default
+                  <mark>spec:</mark>
+                    ports:
+                    - port: 80
+                      targetPort: 3000
+                    selector:
+                      app: k8sday
+                  <mark>status:</mark>
+                    loadBalancer: {}
+              </code>
+            </pre>
+          </section>
+          <section data-transition="fade-in">
+            <h2>Pod</h2>
+            <pre>
+              <code data-trim data-noescape>
+                <mark>apiVersion:</mark> v1
+                <mark>kind:</mark> Pod
+                <mark>metadata:</mark>
+                  <mark>name:</mark> ptlcdebug
+                  namespace: default
+                  labels:
+                    app: k8sday
+                <mark>spec:</mark>
+                  containers:
+                  - command:
+                    - sleep
+                    - "86400"
+                    image: alpine:3.7
+                    name: alpine
+                <mark>status:</mark>
+                  podPhase: Running
+              </code>
+            </pre>
+          </section>
+          <section data-transition="fade-in">
+            <h2>Deployment</h2>
+            <pre>
+              <code data-trim data-noescape>
+                <mark>apiVersion:</mark> apps/v1
+                <mark>kind:</mark> Deployment
+                <mark>metadata:</mark>
+                  <mark>name:</mark> ptlcdebug
+                  namespace: default
+                <mark>spec:</mark>
+                  replicas: 2
+                  selector:
+                    matchLabels:
+                      app: k8sday
+                  template:
+                    metadata:
+                      labels:
+                        app: k8sday
+                    containers:
+                    - command:
+                      - sleep
+                      - "86400"
+                      image: alpine:3.7
+                      name: alpine
+                <mark>status:</mark>
+                  readyReplicas: 2
+              </code>
+            </pre>
+          </section>
+          <section>
+            <img src="img/monkey.gif" style="border:none; background:none;width:40%;margin: auto;display: block;" /><br/>
+          </section>
+          <section>
+            <h2>Takeaways</h2>
+            <ul>
+              <li>Declarative configuration</li>
+              <li>Reconciliation loops</li>
+              <li>API groups and API versioning</li>
+              <li>Metadata</li>
+              <li>[spec]</li>
+              <li>[status]</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h3>Custom Resources</h3>
+            <ol>
+              <li>CustomResourceDefinitions</li>
+              <li>API Aggregation</li>
+            </ol>
+          </section>
+          <section>
+            <h3>CustomResourceDefinition</h3>
+              <pre>
+                <code data-trim data-noescape>
+                  apiVersion: <span class="fragment" data-fragment-index="3">apiextensions.k8s.io/v1beta1</span>
+                  kind: <span class="fragment" data-fragment-index="2">CustomResourceDefinition</span>
+                  metadata:
+                    name: <span class="fragment" data-fragment-index="4">openvpns.ptlc.nl</span>
+                  spec:
+                    group: <span class="fragment" data-fragment-index="4">ptlc.nl</span>
+                    names:
+                      kind: <span class="fragment" data-fragment-index="5">OpenVPN</span>
+                      listKind: <span class="fragment" data-fragment-index="5">OpenVPNList</span>
+                      plural: <span class="fragment" data-fragment-index="4">openvpns</span>
+                      singular: <span class="fragment" data-fragment-index="4">openvpn</span>
+                    scope: <span class="fragment" data-fragment-index="3">Namespaced</span>
+                    version: <span class="fragment" data-fragment-index="6">v1alpha1</span>
+                </code>
+              </pre>
+          </section>
+          <section>
+            <h3>Custom Resource</h3>
+            <pre>
+              <code data-trim data-noescape>
+                apiVersion: <span class="fragment" data-fragment-index="1">ptlc.nl/v1alpha1</span>
+                kind: <span class="fragment" data-fragment-index="2">OpenVPN</span>
+                <span class="fragment" data-fragment-index="3">metadata:
+                  name: k8sday 
+                  namespace: default</span>
+                <span class="fragment" data-fragment-index="4">spec:
+                  podCIDR: 172.30.0.0/16
+                  publicEndpoint:
+                    hostname: vpn.ptlc.nl
+                    port: 1194
+                    protocol: tcp
+                  serviceCIDR: 172.21.0.0/16</span>
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h2>What's missing here?</h2>
+            <b class="fragment">input validation!</b>
+            <pre class="fragment">
+              <code data-trim data-noescape>
+                  apiVersion: apiextensions.k8s.io/v1beta1
+                  kind: CustomResourceDefinition
+                  metadata:
+                    name: openvpns.ptlc.nl
+                  spec:
+                    group: ptlc.nl
+                    version: v1alpha1
+                    scope: Namespaced
+                    names:
+                      kind: OpenVPN
+                      listKind: OpenVPNList
+                      plural: openvpns
+                      singular: openvpn
+                    validation:
+                      openAPIV3Schema:
+                        properties:
+                          spec:
+                            properties:
+                              pidCIDR
+                                type: string
+                                pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+                              serviceCIDR:
+                                type: string
+                                pattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+              </code>
+            </pre>
+          </section>
+          <section>
+            <h2>Tools for managing these things</h2>
+            <h3><a href="https://github.com/GoogleCloudPlatform/metacontroller">metacontroller</a></h3>
+            <p>Lightweigth kubernetes controllers as a service</p>
+            <ul>
+              <li class="fragment">Basically a JSON generator/exploder</li>
+              <li class="fragment"><a href="https://github.com/GoogleCloudPlatform/metacontroller/tree/master/examples/bluegreen">bluegreen</a> is a nice example</a></li>
+            </ul>
+          </section>
+          <section>
+            <h2>Its more complicated than that..</h2>
+            <br>We need a logic engine to automatically respond to Events</br>
+            <ul>
+              <li class="fragment">Encode human operations/business logic into software</li>
+              <li class="fragment">Stateful services are sensitive beasts</li>
+              <li class="fragment">Scaling, backups, recovery, consensus, ...</li>
+              <li class="fragment">Cleanup</li>
+            </ul>
+          </section>
+          <section>
+            <h2>Examples</h2>
+            <p><a href="https://github.com/upmc-enterprises/elasticsearch-operator">elasticsearch-operator</a></p>
+            <img src="img/elastic.png" style="border:none; background:none;width:15%;"/>
+          </section>
+          <section>
+            <h2>Examples</h2>
+            <p><a href="https://github.com/coreos/prometheus-operator">prometheus-operator</a></p>
+            <img src="img/prometheus.png" style="border:none; background:none;width:15%;"/>
+          </section>
+          <section>
+            <h2>Examples</h2>
+            <p><a href="https://github.com/coreos/etcd-operator">etcd-operator</a></p>
+            <img src="img/etcd.png" style="border:none; background:none;width:15%;"/>
+          </section>
+          <section>
+            <h2>Examples</h2>
+            <p><a href="https://github.com/jetstack/cert-manager">cert-manager</a></p>
+            <img src="img/jetstack.png" style="border:none; background:none;width:20%;"/>
+          </section>
+          <section>
+            <h2>And many more</h2>
+            <p><a href="https://github.com/operator-framework/awesome-operators">awesome-operators</a></p>
+            <img src="img/awesome.png" style="border:none; background:none;width:20%;"/>
+          </section>
+          <section>
+            <h2>Tools for managing these things</h2>
+            <h3><a href="https://github.com/operator-framework/operator-sdk/">The operator framework</a></h3>
+            <ul>
+              <li class="fragment">High level API's</li>
+              <li class="fragment">Project scaffolding</li>
+              <li class="fragment">Extensions for common usecases</li>
+            </ul><br/>
+            <img src="img/operator-stable.png" class="fragment" style="border:none; background:none;width:60%;"/>
+          </section>
+        </section>
+
+        <section>
+          <h1>demo</h1>
+          <img src="img/openvpn-icon.png" class="fragment" style="border:none; background:none;width:10%;"/>
+        </section>
+        <section>
+          <section data-transition="fade-out">
+            <h1>Observations</h1>
+          </section>
+          <section data-transition="fade-in">
+            <h1>Observations</h1>
+            <p>operator-sdk is opinionated</p>
+            <ul>
+              <li class="fragment"><a href="https://github.com/operator-framework/operator-sdk/issues/236">operator per namespace</a></li>
+              <li class="fragment">doesn't encourage good patterns yet</li>
+            </ul>
+          </section>
+          <section>
+            <h3>abstractions are leaky</h3>
+          <img src="img/cloud-leaky.jpg" class="fragment" style="border:none; background:none;width:60%;"/>
+          </section>
+        </section>
+        <section>
+          <h1>you</h1>
+          <div id="left">
+            <img src="img/robots.jpg" class="fragment" style="border:none; background:none;width:100%;"/>
+          </div>
+          <div id="right">
+            <ul>
+              <li class="fragment">Automation makes our lives easier</li>
+              <li class="fragment">IT operations covers the <i>full stack</i></li>
+              <li class="fragment">Take back control of SaaS?</li>
+            </ul>
+        </div>
+        </section>
+
+        <section>
+          <section data-transition="fade-out">
+            <h1>thank you</h1>
+            <br/>
+            <ul>
+              <li><a href="https://github.com/pieterlange/openvpn-operator">https://github.com/pieterlange/<i>openvpn-operator</i></a></li>
+              <li><a href="https://github.com/pieterlange/kube-openvpn">https://github.com/pieterlange/<i>kube-openvpn</i></a></li>
+              <li><a href="https://github.com/pieterlange/k8sday">https://github.com/pieterlange/<i>k8sday</i></a></li>
+            </ul>
+          </section>
+        </section>
+      </div>
+    </div>
+
+    <script src="reveal.js-3.6.0/lib/js/head.min.js"></script>
+    <script src="reveal.js-3.6.0/js/reveal.js"></script>
+
+    <script>
+      // More info https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        history: true,
+        width: "90%",
+        margin: 0.05,
+
+        // More info https://github.com/hakimel/reveal.js#dependencies
+        dependencies: [
+          { src: 'reveal.js-3.6.0/plugin/markdown/marked.js' },
+          { src: 'reveal.js-3.6.0/plugin/markdown/markdown.js' },
+          { src: 'reveal.js-3.6.0/plugin/notes/notes.js', async: true },
+          { src: 'reveal.js-3.6.0/plugin/tagcloud/tagcloud.js', async: true },
+          { src: 'reveal.js-3.6.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+      var resizeSlide = function() {
+        Reveal.configure({
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+      }
+
+      setInterval(resizeSlide, 2000);
+    </script>
+  </body>
+</html>
